@@ -105,3 +105,53 @@ function wpforms_footer_script() {
 }
 
 add_action( 'wpforms_wp_footer_end', 'wpforms_footer_script', 30 );
+
+// Filter CSV columnns.
+
+function trimetal_filter_csv( $exportData, $requestData ) {
+	$exportData = array_values( $exportData );
+
+	$nameFields = [
+		'5'  => 1,
+		'7'  => 2,
+		'9'  => 3,
+		'11' => 4,
+		'13' => 5
+	];
+
+	$personFields = [
+		1 => false,
+		2 => false,
+		3 => false,
+		4 => false,
+		5 => false
+	];
+
+	$personCount = 0;
+	foreach ( $nameFields as $fieldIndex => $personIndex ) {
+		if ( ! empty( $exportData[ $fieldIndex ] ) ) {
+			$personCount++;
+
+			$personFields[ $personIndex ] = true;
+		}
+	}
+
+	$exportData['aantal_personen'] = $personCount;
+
+	$exportData['persoon_1'] = '';
+	$exportData['persoon_2'] = '';
+	$exportData['persoon_3'] = '';
+	$exportData['persoon_4'] = '';
+	$exportData['persoon_5'] = '';
+
+	for ( $i = 5; $i >= 1; $i-- ) {
+		if ( ! empty( $personFields[ $i ] ) ) {
+			$exportData[ "persoon_{$i}" ] = $i;
+			return $exportData;
+		}
+	}
+
+	return $exportData;
+}
+
+add_filter( 'wpforms_pro_admin_entries_export_ajax_get_entry_data', 'trimetal_filter_csv', 10, 2 );
